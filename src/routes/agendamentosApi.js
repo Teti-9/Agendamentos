@@ -138,7 +138,7 @@ const router = express.Router()
  */
 
 router.get('/agendamentos', async (req, res) => {
-    
+
     const agendamentos = await prisma.agendamento.findMany({
         orderBy: {
             dia: 'asc'
@@ -157,15 +157,15 @@ router.get('/agendamentos', async (req, res) => {
     })
 
     const agendamentosFormatado = agendamentos.map(item => ({
-            id: item.id,
-            nome: item.nome,
-            sobrenome: item.sobrenome,
-            telefone: item.telefone,
-            dia: item.dia,
-            horario: item.horario,
-            instrutor: item.instrutor.nome
-        }))
-    
+        id: item.id,
+        nome: item.nome,
+        sobrenome: item.sobrenome,
+        telefone: item.telefone,
+        dia: item.dia,
+        horario: item.horario,
+        instrutor: item.instrutor.nome
+    }))
+
     return res.json({
         success: true,
         data: agendamentosFormatado
@@ -183,16 +183,23 @@ router.post('/agendamento', validarAgendamento, async (req, res) => {
             ])
 
             if (instrutorDisponivel.length < 1) {
-                return res.status(404).json({ 
+                return res.status(404).json({
                     success: false,
                     message: "Instrutor não disponível."
                 })
             }
 
             if (agendamentoExistente.length > 0) {
-                return res.status(409).json({ 
+                return res.status(409).json({
                     success: false,
                     message: "Já existe um agendamento para este dia e horário."
+                })
+            }
+
+            if (new Date(req.body.dia).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Não é possível agendar um agendamento para um dia passado."
                 })
             }
         }
@@ -224,16 +231,17 @@ router.post('/agendamento', validarAgendamento, async (req, res) => {
 
     } catch (error) {
         if (error.code === 'P2003') {
-            return res.status(404).json({ 
+            return res.status(404).json({
                 success: false,
                 message: "Instrutor não encontrado."
             })
         }
         console.log(error)
-        return res.status(500).json({ 
+        return res.status(500).json({
             success: false,
-            message: "Erro ao criar agendamento." })
-        }
+            message: "Erro ao criar agendamento."
+        })
+    }
 })
 
 router.put('/agendamento/:id', async (req, res) => {
@@ -249,14 +257,14 @@ router.put('/agendamento/:id', async (req, res) => {
             ])
 
             if (instrutorDisponivel.length < 1) {
-                return res.status(404).json({ 
+                return res.status(404).json({
                     success: false,
                     message: "Instrutor não disponível."
                 })
             }
 
             if (agendamentoExistente.length > 0) {
-                return res.status(409).json({ 
+                return res.status(409).json({
                     success: false,
                     message: "Já existe um agendamento para este dia e horário."
                 })
@@ -288,14 +296,17 @@ router.put('/agendamento/:id', async (req, res) => {
 
     } catch (error) {
         if (error.code === 'P2025') {
-            return res.status(404).json({ 
+            return res.status(404).json({
                 success: false,
-                message: "Agendamento não encontrado." })
+                message: "Agendamento não encontrado."
+            })
         } else {
-            return res.status(500).json({ 
+            return res.status(500).json({
                 success: false,
-                message: "Erro ao editar agendamento." })}
+                message: "Erro ao editar agendamento."
+            })
         }
+    }
 })
 
 router.delete('/agendamento_cancelar/:id', async (req, res) => {
@@ -317,14 +328,14 @@ router.delete('/agendamento_cancelar/:id', async (req, res) => {
         }).catch(err => console.log(err))
 
         return res.status(200).json({
-            success: true, 
-            message: "Agendamento cancelado com sucesso." 
+            success: true,
+            message: "Agendamento cancelado com sucesso."
         })
-        
+
     } catch (error) {
         console.log(error)
         if (error.code === 'P2025') {
-            return res.status(404).json({ 
+            return res.status(404).json({
                 success: false,
                 message: "Agendamento não encontrado."
             })

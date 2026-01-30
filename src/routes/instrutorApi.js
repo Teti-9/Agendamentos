@@ -73,11 +73,11 @@ router.get('/instrutores', async (req, res) => {
     const instrutores = await prisma.instrutor.findMany({})
 
     const instrutoresFormatado = instrutores.map(item => ({
-            id: item.id,
-            nome: item.nome,
-            dia: item.dia,
-            horario: item.horario
-        }))
+        id: item.id,
+        nome: item.nome,
+        dia: item.dia,
+        horario: item.horario
+    }))
 
     return res.json({
         success: true,
@@ -90,9 +90,9 @@ router.get('/instrutor/:dia', async (req, res) => {
     try {
 
         const dia = req.params.dia
-        
+
         const instrutor = await prisma.$queryRaw
-        `
+            `
         SELECT * FROM Instrutor 
         WHERE EXISTS (
             SELECT 1 FROM json_each(Instrutor.dia) 
@@ -100,17 +100,18 @@ router.get('/instrutor/:dia', async (req, res) => {
         `
 
         if (instrutor.length < 1) {
-            return res.status(404).json({ 
+            return res.status(404).json({
                 success: false,
                 message: "Nenhum instrutor disponível para esse dia."
-        })}
+            })
+        }
 
         const instrutorFormatado = instrutor.map(item => ({
-                id: item.id,
-                nome: item.nome,
-                dia: item.dia,
-                horario: item.horario,
-            }))
+            id: item.id,
+            nome: item.nome,
+            dia: item.dia,
+            horario: item.horario,
+        }))
 
         res.json({
             success: true,
@@ -131,8 +132,8 @@ router.post('/instrutor', validarInstrutor, async (req, res) => {
     const { nome, dia, horario } = req.body
 
     const instrutorFormatado = {
-            ...req.body,
-        }
+        ...req.body,
+    }
 
     try {
 
@@ -152,10 +153,11 @@ router.post('/instrutor', validarInstrutor, async (req, res) => {
                 message: `Instrutor ${req.body.nome} já cadastrado.`
             })
         }
-        return res.status(500).json({ 
+        return res.status(500).json({
             success: false,
-            message: "Erro ao cadastrar instrutor." })
-        }
+            message: "Erro ao cadastrar instrutor."
+        })
+    }
 })
 
 router.delete('/instrutor/:id', async (req, res) => {
@@ -170,13 +172,13 @@ router.delete('/instrutor/:id', async (req, res) => {
         })
 
         return res.json({
-            success: true, 
-            message: "Instrutor deletado." 
+            success: true,
+            message: "Instrutor deletado."
         })
-        
+
     } catch (error) {
         if (error.code === 'P2025') {
-            return res.status(404).json({ 
+            return res.status(404).json({
                 success: false,
                 message: "Instrutor não encontrado."
             })
