@@ -21,7 +21,7 @@ function App() {
 
   // Admin
   const [dia, setDia] = useState('')
-  const [horario, setHorario] = useState('')
+  const [horario, setHorario] = useState([])
   const [instrutores, setInstrutores] = useState([])
 
   // Dashboard
@@ -35,23 +35,23 @@ function App() {
   const [novoHorarioSelecionado, setNovoHorarioSelecionado] = useState('')
 
   const pages = {
-    0: <Index email={email} senha={senha} 
-    setEmail={setEmail} setSenha={setSenha} setPage={setPage} />,
+    0: <Index email={email} senha={senha}
+      setEmail={setEmail} setSenha={setSenha} setPage={setPage} />,
 
-    1: <Registro nome={nome} sobrenome={sobrenome} email={email} senha={senha} telefone={telefone} 
-    setNome={setNome} setSobrenome={setSobrenome} setEmail={setEmail} setSenha={setSenha} setTelefone={setTelefone} setPage={setPage} />,
+    1: <Registro nome={nome} sobrenome={sobrenome} email={email} senha={senha} telefone={telefone}
+      setNome={setNome} setSobrenome={setSobrenome} setEmail={setEmail} setSenha={setSenha} setTelefone={setTelefone} setPage={setPage} />,
 
-    2: <Dashboard nome={nome} sobrenome={sobrenome} telefone={telefone} date={date} instrutorDate={instrutorDate} 
-    instrutorSelecionado={instrutorSelecionado} instrutorHorario={instrutorHorario} reload={reload}
-    agendamentos={agendamentos} agendamentoEdit={agendamentoEdit} novoHorario={novoHorario} novoHorarioSelecionado={novoHorarioSelecionado}
-    setInstrutorDate={setInstrutorDate} setPage={setPage} setDate={setDate} 
-    setInstrutorSelecionado={setInstrutorSelecionado} setInstrutorHorario={setInstrutorHorario} 
-    setReload={setReload} setAgendamentos={setAgendamentos} setAgendamentoEdit={setAgendamentoEdit} 
-    setNovoHorario={setNovoHorario} setNovoHorarioSelecionado={setNovoHorarioSelecionado}/>,
-    
+    2: <Dashboard nome={nome} sobrenome={sobrenome} telefone={telefone} date={date} instrutorDate={instrutorDate}
+      instrutorSelecionado={instrutorSelecionado} instrutorHorario={instrutorHorario} reload={reload}
+      agendamentos={agendamentos} agendamentoEdit={agendamentoEdit} novoHorario={novoHorario} novoHorarioSelecionado={novoHorarioSelecionado}
+      setInstrutorDate={setInstrutorDate} setPage={setPage} setDate={setDate}
+      setInstrutorSelecionado={setInstrutorSelecionado} setInstrutorHorario={setInstrutorHorario}
+      setReload={setReload} setAgendamentos={setAgendamentos} setAgendamentoEdit={setAgendamentoEdit}
+      setNovoHorario={setNovoHorario} setNovoHorarioSelecionado={setNovoHorarioSelecionado} />,
+
     3: <Admin nome={nome} dia={dia} horario={horario} instrutores={instrutores} reload={reload}
-    setNome={setNome} setDia={setDia} setHorario={setHorario} 
-    setPage={setPage} setInstrutores={setInstrutores} setReload={setReload}/>
+      setNome={setNome} setDia={setDia} setHorario={setHorario}
+      setPage={setPage} setInstrutores={setInstrutores} setReload={setReload} />
   }
 
   useEffect(() => {

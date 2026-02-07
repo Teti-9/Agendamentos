@@ -3,7 +3,9 @@ import prisma from '../prismaClient.js'
 import instrutorExiste from '../utils/instrutorExiste.js'
 import instrutorLivre from '../utils/instrutorLivre.js'
 import validarAgendamento from '../middleware/agendamentoValidationMiddleware.js'
+import validarEdition from '../middleware/agendamentoEditValidationMiddleware.js'
 import { tasksQ } from '../queue.js'
+import Agendamento from '../models/agendamento.js'
 
 const router = express.Router()
 
@@ -139,25 +141,41 @@ const router = express.Router()
 
 router.get('/agendamentos', async (req, res) => {
 
-    const agendamentos = await prisma.agendamento.findMany({
-        orderBy: {
-            dia: 'asc'
-        },
-        where: {
-            userId: req.dados.userId
-        },
-        include: {
-            instrutor: {
-                select: {
-                    id: true,
-                    nome: true
-                }
-            }
-        }
-    })
+    // PRISMA SQL
+
+    // const agendamentos = await prisma.agendamento.findMany({
+    //     orderBy: {
+    //         dia: 'asc'
+    //     },
+    //     where: {
+    //         userId: req.dados.userId
+    //     },
+    //     include: {
+    //         instrutor: {
+    //             select: {
+    //                 id: true,
+    //                 nome: true
+    //             }
+    //         }
+    //     }
+    // })
+
+    // PRISMA SQL
+
+    // MONGODB
+
+    const agendamentos = await Agendamento.find({
+        user: req.dados.userId
+    }).sort({
+        dia: 1
+    }).populate('instrutor')
+        .lean()
+
+    // MONGODB
 
     const agendamentosFormatado = agendamentos.map(item => ({
-        id: item.id,
+        // id: item.id, // PRISMA SQL
+        _id: item._id, // MONGODB
         nome: item.nome,
         sobrenome: item.sobrenome,
         telefone: item.telefone,
@@ -178,23 +196,45 @@ router.post('/agendamento', validarAgendamento, async (req, res) => {
 
         if (req.body.dia && req.body.horario) {
             const [instrutorDisponivel, agendamentoExistente] = await Promise.all([
-                instrutorExiste(req.body.instrutorId, req.body.dia),
+                instrutorExiste(req.body.instrutorId, req.body.dia, req.body.horario),
                 instrutorLivre(req.body.instrutorId, req.body.dia, req.body.horario)
             ])
 
-            if (instrutorDisponivel.length < 1) {
+            //* PRISMA SQL
+
+            // if (instrutorDisponivel.length < 1) {
+            //     return res.status(404).json({
+            //         success: false,
+            //         message: "Instrutor não disponível."
+            //     })
+            // }
+
+            // if (agendamentoExistente.length > 0) {
+            //     return res.status(409).json({
+            //         success: false,
+            //         message: "Já existe um agendamento para este dia e horário."
+            //     })
+            // }
+
+            //* PRISMA SQL
+
+            //* MONGODB
+
+            if (!instrutorDisponivel) {
                 return res.status(404).json({
                     success: false,
                     message: "Instrutor não disponível."
                 })
             }
 
-            if (agendamentoExistente.length > 0) {
+            if (agendamentoExistente) {
                 return res.status(409).json({
                     success: false,
                     message: "Já existe um agendamento para este dia e horário."
                 })
             }
+
+            //* MONGODB
 
             if (new Date(req.body.dia).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
                 return res.status(400).json({
@@ -211,13 +251,23 @@ router.post('/agendamento', validarAgendamento, async (req, res) => {
             telefone: req.dados.telefone,
             dia: req.body.dia,
             horario: req.body.horario,
-            userId: req.dados.userId,
-            instrutorId: req.body.instrutorId
+            user: req.dados.userId,
+            instrutor: req.body.instrutorId
         }
 
-        const agendamentoCriado = await prisma.agendamento.create({
-            data: agendamentoFormatado
-        })
+        //* MONGODB
+
+        const agendamentoCriado = await Agendamento.create(agendamentoFormatado)
+
+        //* MONGODB
+
+        //* PRISMA SQL
+
+        // const agendamentoCriado = await prisma.agendamento.create({
+        //     data: agendamentoFormatado
+        // })
+
+        //* PRISMA SQL
 
         res.status(201).json({
             success: true,
@@ -244,7 +294,7 @@ router.post('/agendamento', validarAgendamento, async (req, res) => {
     }
 })
 
-router.put('/agendamento/:id', async (req, res) => {
+router.put('/agendamento/:id', validarEdition, async (req, res) => {
 
     const { id } = req.params
 
@@ -252,23 +302,45 @@ router.put('/agendamento/:id', async (req, res) => {
 
         if (req.body.dia && req.body.horario) {
             const [instrutorDisponivel, agendamentoExistente] = await Promise.all([
-                instrutorExiste(req.body.instrutorId, req.body.dia),
+                instrutorExiste(req.body.instrutorId, req.body.dia, req.body.horario),
                 instrutorLivre(req.body.instrutorId, req.body.dia, req.body.horario)
             ])
 
-            if (instrutorDisponivel.length < 1) {
+            //* PRISMA SQL
+
+            // if (instrutorDisponivel.length < 1) {
+            //     return res.status(404).json({
+            //         success: false,
+            //         message: "Instrutor não disponível."
+            //     })
+            // }
+
+            // if (agendamentoExistente.length > 0) {
+            //     return res.status(409).json({
+            //         success: false,
+            //         message: "Já existe um agendamento para este dia e horário."
+            //     })
+            // }
+
+            //* PRISMA SQL
+
+            //* MONGODB
+
+            if (!instrutorDisponivel) {
                 return res.status(404).json({
                     success: false,
                     message: "Instrutor não disponível."
                 })
             }
 
-            if (agendamentoExistente.length > 0) {
+            if (agendamentoExistente) {
                 return res.status(409).json({
                     success: false,
                     message: "Já existe um agendamento para este dia e horário."
                 })
             }
+
+            //* MONGODB
         }
 
         const agendamentoFormatadoeAtualizado = {
@@ -276,13 +348,27 @@ router.put('/agendamento/:id', async (req, res) => {
             ...(req.body.horario && { horario: req.body.horario }),
         }
 
-        const agendamentoAtualizado = await prisma.agendamento.update({
-            where: {
-                id: +id,
-                userId: req.dados.userId
-            },
-            data: agendamentoFormatadoeAtualizado
-        })
+        //* PRISMA SQL
+
+        // const agendamentoAtualizado = await prisma.agendamento.update({
+        //     where: {
+        //         id: +id,
+        //         userId: req.dados.userId
+        //     },
+        //     data: agendamentoFormatadoeAtualizado
+        // })
+
+        //* PRISMA SQL
+
+        //* MONGODB
+
+        const agendamentoAtualizado = await Agendamento.findByIdAndUpdate(
+            id,
+            agendamentoFormatadoeAtualizado,
+            { new: true }
+        )
+
+        //* MONGODB
 
         tasksQ.add('taskAgendamento', {
             ...agendamentoAtualizado,
@@ -315,12 +401,39 @@ router.delete('/agendamento_cancelar/:id', async (req, res) => {
 
     try {
 
-        const agendamentoCancelado = await prisma.agendamento.delete({
-            where: {
-                id: +id,
-                userId: req.dados.userId
-            }
+        //* PRISMA SQL
+
+        // const agendamentoCancelado = await prisma.agendamento.delete({
+        //     where: {
+        //         id: +id,
+        //         userId: req.dados.userId
+        //     }
+        // })
+
+        //* PRISMA SQL
+
+        //* MONGODB
+
+        const agendamentoCancelado = await Agendamento.findByIdAndDelete({
+            _id: id,
+            user: req.dados.userId
         })
+
+        if (!agendamentoCancelado) {
+            return res.status(404).json({
+                success: false,
+                message: "Agendamento não encontrado."
+            })
+        }
+
+        if (String(agendamentoCancelado.user) !== req.dados.userId) {
+            return res.status(403).json({
+                success: false,
+                message: "Você não tem permissão para cancelar este agendamento."
+            })
+        }
+
+        //* MONGODB
 
         await tasksQ.add('taskAgendamento', {
             ...agendamentoCancelado,
@@ -333,7 +446,6 @@ router.delete('/agendamento_cancelar/:id', async (req, res) => {
         })
 
     } catch (error) {
-        console.log(error)
         if (error.code === 'P2025') {
             return res.status(404).json({
                 success: false,

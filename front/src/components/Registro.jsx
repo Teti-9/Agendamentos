@@ -4,7 +4,7 @@ import capitalize from '../utils/capitalize.js'
 import formatarEChecarCelularBR from '../utils/formatarTelefone.js'
 
 export default function Registro(props) {
-    const {nome, sobrenome, email, senha, telefone, setNome, setSobrenome, setEmail, setSenha, setTelefone, setPage} = props
+    const { nome, sobrenome, email, senha, telefone, setNome, setSobrenome, setEmail, setSenha, setTelefone, setPage } = props
 
     useEffect(() => {
         setNome('')
@@ -21,7 +21,7 @@ export default function Registro(props) {
         const registro = {
             nome: capitalize(nome),
             sobrenome: capitalize(sobrenome),
-            email: email,
+            email: email.toLowerCase(),
             telefone: formatarEChecarCelularBR(telefone).numero,
             senha: senha
         }
@@ -69,21 +69,22 @@ export default function Registro(props) {
                     <button className="btn-action" disabled={!email || !senha} type="submit" >Registrar</button>
                 </form>
 
-                <button 
-                onClick={() => setPage(0)} 
-                style={{ 
-                    background: 'none', 
-                    border: 'none', 
-                    color: 'blue', 
-                    textDecoration: 'underline', 
-                    cursor: 'pointer',
-                    padding: 0,
-                    paddingTop: '10px',
-                    marginLeft: '3px'
-                }}
+                <button
+                    onClick={() => setPage(0)}
+                    style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'blue',
+                        textDecoration: 'underline',
+                        cursor: 'pointer',
+                        padding: 0,
+                        paddingTop: '10px',
+                        marginLeft: '3px'
+                    }}
                 >
-                Logar!
+                    Logar!
                 </button>
             </div>
         </div>
-    )}
+    )
+}

@@ -11,10 +11,8 @@ const validarAgendamento = (req, res, next) => {
         nome: Joi.string().min(3).max(30).required(),
         sobrenome: Joi.string().min(3).max(30).required(),
         telefone: Joi.string().length(11).required(),
-        dia: Joi.date().iso().required(),
         horario: Joi.string().min(6).required(),
         // instrutorId: Joi.number().integer().required(), // PRISMA SQL
-        instrutorId: Joi.string().required(), // MONGODB
     }).unknown(true)
 
     const { error } = schema.validate(dados, { abortEarly: false })

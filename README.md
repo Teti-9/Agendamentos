@@ -23,8 +23,16 @@ express-agendamento/
 ├── prisma/ * Database, migrations e schema.
 │
 ├── src/
+│   └── config/
+│       └── * Config conexões Mail, Redis e MongoDB.
+│   └── jobs/
+│       └── * Jobs BULLMQ.
+│   └── lib/
+│       └── * Worker BULLMQ.
 │   └── middleware/
 │       └── * Auth e validações de dados com JOI para rotas.
+│   └── models/
+│       └── * MongoDB Models.
 │   └── routes/
 │       └── * Rotas Back-end Auth, instrutor e agendamento.
 │   └── utils/
@@ -54,6 +62,13 @@ cd express-agendamento
 PORT = 8000
 JWT_SECRET = 'stringqualquer'
 DATABASE_URL = 'file:./dev.db'
+MONGODB = 'mongodb_url'
+REDIS_USERNAME = 'default'
+REDIS_PASSWORD = 'senharedis'
+REDIS_HOST = 'redislabs.com'
+REDIS_PORT = '00000'
+MAIL_USERNAME = 'mailtrap123'
+MAIL_PASSWORD = 'mailtrap123'
 ```
 
 3. **Gere o client do Prisma**:

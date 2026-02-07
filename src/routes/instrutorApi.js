@@ -1,6 +1,7 @@
 import express from 'express'
 import prisma from '../prismaClient.js'
 import validarInstrutor from '../middleware/instrutorValidationMiddleware.js'
+import Instrutor from "../models/instrutor.js"
 
 const router = express.Router()
 
@@ -70,10 +71,21 @@ const router = express.Router()
 
 router.get('/instrutores', async (req, res) => {
 
-    const instrutores = await prisma.instrutor.findMany({})
+    //* PRISMA SQL
+
+    // const instrutores = await prisma.instrutor.findMany({})
+
+    //* PRISMA SQL
+
+    //* MONGODB
+
+    const instrutores = await Instrutor.find({})
+
+    //* MONGODB
 
     const instrutoresFormatado = instrutores.map(item => ({
-        id: item.id,
+        // id: item.id, // PRISMA SQL
+        _id: item._id, // MONGODB
         nome: item.nome,
         dia: item.dia,
         horario: item.horario
@@ -91,13 +103,25 @@ router.get('/instrutor/:dia', async (req, res) => {
 
         const dia = req.params.dia
 
-        const instrutor = await prisma.$queryRaw
-            `
-        SELECT * FROM Instrutor 
-        WHERE EXISTS (
-            SELECT 1 FROM json_each(Instrutor.dia) 
-            WHERE value = ${dia})
-        `
+        //* PRISMA SQL
+
+        // const instrutor = await prisma.$queryRaw
+        //     `
+        // SELECT * FROM Instrutor 
+        // WHERE EXISTS (
+        //     SELECT 1 FROM json_each(Instrutor.dia) 
+        //     WHERE value = ${dia})
+        // `
+
+        //* PRISMA SQL
+
+        //* MONGODB
+
+        const instrutor = await Instrutor.find({
+            dia: dia
+        })
+
+        //* MONGODB
 
         if (instrutor.length < 1) {
             return res.status(404).json({
@@ -107,7 +131,8 @@ router.get('/instrutor/:dia', async (req, res) => {
         }
 
         const instrutorFormatado = instrutor.map(item => ({
-            id: item.id,
+            // id: item.id, // PRISMA SQL
+            _id: item._id, // MONGODB
             nome: item.nome,
             dia: item.dia,
             horario: item.horario,
@@ -137,9 +162,19 @@ router.post('/instrutor', validarInstrutor, async (req, res) => {
 
     try {
 
-        const instrutorCriado = await prisma.instrutor.create({
-            data: instrutorFormatado
-        })
+        //* MONGODB
+
+        const instrutorCriado = await Instrutor.create(instrutorFormatado)
+
+        //* MONGODB
+
+        //* PRISMA SQL
+
+        // const instrutorCriado = await prisma.instrutor.create({
+        //     data: instrutorFormatado
+        // })
+
+        //* PRISMA SQL
 
         return res.status(201).json({
             success: true,
@@ -153,6 +188,12 @@ router.post('/instrutor', validarInstrutor, async (req, res) => {
                 message: `Instrutor ${req.body.nome} já cadastrado.`
             })
         }
+        if (error.code === 11000) { //* MONGODB
+            return res.status(400).json({
+                success: false,
+                message: `Instrutor ${req.body.nome} já cadastrado.`
+            })
+        }
         return res.status(500).json({
             success: false,
             message: "Erro ao cadastrar instrutor."
@@ -161,15 +202,33 @@ router.post('/instrutor', validarInstrutor, async (req, res) => {
 })
 
 router.delete('/instrutor/:id', async (req, res) => {
+
     const { id } = req.params
 
     try {
 
-        await prisma.instrutor.delete({
-            where: {
-                id: +id,
-            }
-        })
+        //* PRISMA SQL
+
+        // await prisma.instrutor.delete({
+        //     where: {
+        //         id: +id,
+        //     }
+        // })
+
+        //* PRISMA SQL
+
+        //* MONGODB
+
+        const instrutorDeletado = await Instrutor.findByIdAndDelete(id)
+
+        //* MONGODB
+
+        if (!instrutorDeletado) {
+            return res.status(404).json({
+                success: false,
+                message: "Instrutor não encontrado."
+            })
+        }
 
         return res.json({
             success: true,

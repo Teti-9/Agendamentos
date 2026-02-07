@@ -5,6 +5,7 @@ import prisma from '../prismaClient.js'
 import { tasksQ } from '../queue.js'
 import validarUsuario from '../middleware/authValidationMiddleware.js'
 import validarLogin from '../middleware/authLoginMiddleware.js'
+import Usuario from '../models/usuario.js'
 
 const router = express.Router()
 
@@ -79,18 +80,42 @@ router.post('/registrar', validarUsuario, async (req, res) => {
 
     try {
 
-        const user = await prisma.user.create({
-            data: {
-                ...req.body,
-                senha: senhaHashed
-            }
+        // MONGODB
+
+        const emailExiste = await Usuario.findOne({
+            email: email
         })
+
+        if (emailExiste) {
+            return res.status(400).json({
+                success: false,
+                message: "Email já cadastrado."
+            })
+        }
+
+        const user = await Usuario.create({
+            ...req.body,
+            senha: senhaHashed
+        })
+
+        // MONGODB
+
+        // PRISMA SQL
+
+        // const user = await prisma.user.create({
+        //     data: {
+        //         ...req.body,
+        //         senha: senhaHashed
+        //     }
+        // })
+
+        // PRISMA SQL
 
         await tasksQ.add('taskMail', user).catch(err => console.log(err))
 
         return res.status(201).json({
-            success: true, 
-            message: "Usuário registrado com sucesso" 
+            success: true,
+            message: "Usuário registrado com sucesso"
         })
 
     } catch (error) {
@@ -100,9 +125,10 @@ router.post('/registrar', validarUsuario, async (req, res) => {
                 message: "Email já cadastrado."
             })
         }
-        return res.status(500).json({ 
+        return res.status(500).json({
             success: false,
-            message: "Erro ao registrar usuário." })
+            message: "Erro ao registrar usuário."
+        })
     }
 })
 
@@ -111,11 +137,23 @@ router.post('/logar', validarLogin, async (req, res) => {
 
     try {
 
-        const user = await prisma.user.findUnique({
-            where: {
-                email: email
-            }
+        // MONGODB
+
+        const user = await Usuario.findOne({
+            email: email
         })
+
+        // MONGODB
+
+        // PRISMA SQL
+
+        // const user = await prisma.user.findUnique({
+        //     where: {
+        //         email: email
+        //     }
+        // })
+
+        // PRISMA SQL
 
         const senhaValida = bcrypt.compareSync(senha, user.senha)
 
@@ -123,19 +161,21 @@ router.post('/logar', validarLogin, async (req, res) => {
             return res.status(401).send({ message: "Senha inválida" })
         }
 
-        const token = jwt.sign({ 
-            id: user.id, 
-            nome: user.nome, 
+        const token = jwt.sign({
+            // id: user.id, // PRISMA SQL
+            id: user._id, // MONGODB
+            nome: user.nome,
             sobrenome: user.sobrenome,
-            email: user.email, 
-            telefone: user.telefone}, 
+            email: user.email,
+            telefone: user.telefone
+        },
             process.env.JWT_SECRET, { expiresIn: '12h' })
-        
+
         res.json(`Bearer ${token}`)
 
     } catch (error) {
         if (error.message === "Cannot read properties of null (reading 'senha')") {
-            return res.status(404).json({ 
+            return res.status(404).json({
                 success: false,
                 message: "Email não encontrado."
             })

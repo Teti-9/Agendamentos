@@ -1,4 +1,4 @@
-import { format } from  'date-fns'
+import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
 export default function LinhasInstrutores({ data, setReload }) {
@@ -8,18 +8,18 @@ export default function LinhasInstrutores({ data, setReload }) {
 
         try {
             const response = await fetch(INSTRUTOR_API, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        })
-        if (response.ok) {
-            await response.json()
-            setReload(prev => !prev)
-            alert('Instrutor deletado com sucesso!')
-        } else {
-            const errorData = await response.json()
-            console.log(errorData)
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+            if (response.ok) {
+                await response.json()
+                setReload(prev => !prev)
+                alert('Instrutor deletado com sucesso!')
+            } else {
+                const errorData = await response.json()
+                console.log(errorData)
             }
         } catch (error) {
             console.error('Erro ao deletar:', error)
@@ -36,8 +36,8 @@ export default function LinhasInstrutores({ data, setReload }) {
                         {format(new Date(dia), 'dd/MM/yyyy', { locale: ptBR })}
                     </div>
                 ))}
-             </td>
-            <td>{instrutor.horario}</td>
+            </td>
+            <td>{instrutor.horario.join(', ')}</td>
             <td>
                 <button className="delete-btn" onClick={() => handleDeleteInstructor(instrutor.id)}>Excluir</button>
             </td>

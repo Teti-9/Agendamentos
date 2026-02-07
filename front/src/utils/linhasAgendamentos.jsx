@@ -1,9 +1,9 @@
-import { format } from  'date-fns'
+import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import handleCancelAgendamento from '../utils/handleCancelAgendamento.js'
 import getInstrutor from '../utils/getInstrutor.js'
 
-export default function LinhasAgendamentos({ data, setReload, setAgendamentoEdit, setNovoHorario, setNovoHorarioSelecionado}) {
+export default function LinhasAgendamentos({ data, setReload, setAgendamentoEdit, setNovoHorario, setNovoHorarioSelecionado }) {
 
     const handleEdit = async (agendamento) => {
 
@@ -15,14 +15,15 @@ export default function LinhasAgendamentos({ data, setReload, setAgendamentoEdit
         if (data) {
             const inst = data.find(i => i.nome === agendamento.instrutor)
             if (inst) {
-                const lista = inst.horario.split(',').map(h => h.trim())
+                const lista = inst.horario.map(h => h.trim())
                 setNovoHorario(lista)
             }
         }
     }
 
     return data.map((agendamento) => (
-        <tr key={agendamento.id}>
+        <tr key={agendamento._id}>
+            {/* agendamento.id PRISMA SQL */}
             <td>{agendamento.nome} {agendamento.sobrenome}</td>
             <td>
                 <div>
@@ -33,7 +34,8 @@ export default function LinhasAgendamentos({ data, setReload, setAgendamentoEdit
             <td>{agendamento.instrutor}</td>
             <td>
                 <button className="edit-btn" onClick={() => handleEdit(agendamento)}>Editar</button>
-                <button className="delete-btn" onClick={() => handleCancelAgendamento(agendamento.id, setReload)}>Cancelar</button>
+                <button className="delete-btn" onClick={() => handleCancelAgendamento(agendamento._id, setReload)}>Cancelar</button>
+                {/* agendamento.id PRISMA SQL */}
             </td>
         </tr>
     ))

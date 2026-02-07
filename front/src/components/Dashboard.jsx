@@ -4,23 +4,22 @@ import LinhasAgendamentos from '../utils/linhasAgendamentos'
 import getAgendamentos from "../utils/getAgendamentos"
 import handleEditAgendamento from "../utils/handleEditAgendamento"
 import getInstrutor from '../utils/getInstrutor.js'
-import formatarHorario from '../utils/formatarHorario.js'
 import logoutUser from '../utils/logoutUser.js'
 
 export default function Dashboard(props) {
-    const { 
+    const {
         reload, setReload,
-        setPage, date, setDate, 
-        instrutorDate, setInstrutorDate, instrutorSelecionado, 
+        setPage, date, setDate,
+        instrutorDate, setInstrutorDate, instrutorSelecionado,
         setInstrutorSelecionado, instrutorHorario, setInstrutorHorario,
-        agendamentos, setAgendamentos, agendamentoEdit, setAgendamentoEdit, 
-        novoHorario, setNovoHorario, novoHorarioSelecionado, setNovoHorarioSelecionado} = props
+        agendamentos, setAgendamentos, agendamentoEdit, setAgendamentoEdit,
+        novoHorario, setNovoHorario, novoHorarioSelecionado, setNovoHorarioSelecionado } = props
 
     useEffect(() => {
         async function loadAgendamentos() {
             setDate('')
-            setInstrutorSelecionado(0)
-            setInstrutorHorario([])
+            setInstrutorSelecionado('')
+            setInstrutorHorario('')
 
             const data = await getAgendamentos()
             setAgendamentos(data)
@@ -33,20 +32,21 @@ export default function Dashboard(props) {
 
         const agendamento = {
             dia: date + "T03:00:00.000Z",
-            horario: formatarHorario(instrutorHorario),
-            instrutorId: Number(instrutorSelecionado),
+            horario: instrutorHorario,
+            instrutorId: instrutorSelecionado
+            // instrutorId: Number(instrutorSelecionado) PRISMA SQL
         }
 
         const response = await addAgendamento(agendamento)
-  
+
         if (response.success) {
             setDate('')
             setInstrutorDate([])
-            setInstrutorSelecionado(0)
+            setInstrutorSelecionado('')
             setInstrutorHorario([])
 
             setReload(prev => !prev)
-            alert('Agendamento efetuado com sucesso!')       
+            alert('Agendamento efetuado com sucesso!')
         } else {
             alert(response.message)
         }
@@ -61,117 +61,135 @@ export default function Dashboard(props) {
                 </div>
             </div>
 
-        <h2>Adicionar Novo Agendamento</h2>
-            
-        <form onSubmit={async (e) => {
-            e.preventDefault()
-            const data = await getInstrutor(date)
+            <h2>Adicionar Novo Agendamento</h2>
 
-            if (data) {
-                setInstrutorDate(data)
-            } else {
-                setInstrutorDate([])
-            }
+            <form onSubmit={async (e) => {
+                e.preventDefault()
 
-            setInstrutorSelecionado(0)
-            setInstrutorHorario([])
-        }}>
-            <label className="dia-label" htmlFor="date">Selecione o dia do agendamento: </label>
-            <input
-                type="date" 
-                id="date"
-                name="date" 
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                required 
-            />
-            <button type="submit"> Buscar Instrutor </button>
-        </form>
+                const data = await getInstrutor(date)
 
-        <label htmlFor="instrutor">Instrutor disponível: </label>
-        <select id="instrutor" name="instrutor" value={instrutorSelecionado} onChange={(e) => setInstrutorSelecionado(e.target.value)} disabled={!date}>
-            <option value="">Selecione um instrutor</option>
-            {Array.isArray(instrutorDate) && instrutorDate.map((instrutor) => (
-                <option key={instrutor.id} value={instrutor.id}>
-                    {instrutor.nome}
-                </option>
-            ))}
-        </select>
-        <label htmlFor="horario">Horário: </label>
-        <select 
-            id="horario" 
-            name="horario"
-            onChange={(e) => setInstrutorHorario(e.target.value)}
-            disabled={!instrutorSelecionado}
-        >
-            <option value="">Selecione um horário</option>
-            {Array.isArray(instrutorDate) && 
-                instrutorDate
-                    .filter(inst => inst.id == instrutorSelecionado)
-                    .map((inst) => {
-                        const horariosArray = inst.horario.split(',');
+                if (data) {
+                    setInstrutorDate(data)
+                } else {
+                    setInstrutorDate([])
+                    alert('Nenhum instrutor disponível para esta data.')
+                }
 
-                        return horariosArray.map((hora, index) => (
-                            <option key={index} value={hora.trim()}>
-                                {hora.trim()}
-                            </option>
-                        ));
-                    })
-            }
-        </select>
-        <button className="btn-action" onClick={(e) => {handleAgendamento(e)}}>Adicionar Agendamento</button>
+                setInstrutorSelecionado('')
+                setInstrutorHorario([])
+            }}>
+                <label className="dia-label" htmlFor="date">Selecione o dia do agendamento: </label>
+                <input
+                    type="date"
+                    id="date"
+                    name="date"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    required
+                />
+                <button type="submit"> Buscar Instrutor </button>
+            </form>
 
-        <h3 className="title-h3">Lista de Agendamentos</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Cliente</th>
-                            <th>Data</th>
-                            <th>Horário</th>
-                            <th>Instrutor</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody> 
-                        <LinhasAgendamentos 
-                        data={agendamentos} 
-                        setReload={setReload} 
-                        setAgendamentoEdit={setAgendamentoEdit} 
-                        setNovoHorario={setNovoHorario} 
+            <label htmlFor="instrutor">Instrutor disponível: </label>
+            <select
+                id="instrutor"
+                name="instrutor"
+                value={instrutorSelecionado}
+                onChange={(e) => {
+                    setInstrutorSelecionado(e.target.value)
+                    setInstrutorHorario('')
+                }}
+                disabled={!instrutorDate || instrutorDate.length === 0}
+            >
+                {/* instrutor.id PRISMA SQL */}
+                <option value="0">Selecione um instrutor</option>
+                {Array.isArray(instrutorDate) && instrutorDate.map((instrutor) => (
+                    <option key={instrutor._id} value={instrutor._id}>
+                        {instrutor.nome}
+                    </option>
+                ))}
+            </select>
+            <label htmlFor="horario">Horário: </label>
+            <select
+                id="horario"
+                name="horario"
+                value={instrutorHorario}
+                onChange={(e) => setInstrutorHorario(e.target.value)}
+                disabled={!instrutorSelecionado}
+                required
+            >
+                <option value="">Selecione um horário</option>
+                {Array.isArray(instrutorDate) &&
+                    instrutorDate
+                        .filter(inst => inst._id == instrutorSelecionado) // inst.id PRISMA SQL
+                        .map((inst) => {
+
+                            const horarios = Array.isArray(inst.horario)
+                                ? inst.horario
+                                : inst.horario.split(',');
+
+                            return horarios.map((hora, index) => (
+                                <option key={index} value={hora.trim()}>
+                                    {hora.trim()}
+                                </option>
+                            ));
+                        })
+                }
+            </select>
+            <button className="btn-action" onClick={(e) => { handleAgendamento(e) }}>Adicionar Agendamento</button>
+
+            <h3 className="title-h3">Lista de Agendamentos</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Data</th>
+                        <th>Horário</th>
+                        <th>Instrutor</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <LinhasAgendamentos
+                        data={agendamentos}
+                        setReload={setReload}
+                        setAgendamentoEdit={setAgendamentoEdit}
+                        setNovoHorario={setNovoHorario}
                         setNovoHorarioSelecionado={setNovoHorarioSelecionado} />
-                    </tbody>
-                </table>
+                </tbody>
+            </table>
 
-                {agendamentoEdit && (
-                    <div className="modal-overlay">
-                        <div className="modal-content">
-                            <h3>Alterar Horário</h3>
-                            <p><strong>Cliente:</strong> {agendamentoEdit.nome}</p>
-                            <p><strong>Instrutor:</strong> {agendamentoEdit.instrutor}</p>
-                            
-                            <label htmlFor="novo-horario">Escolha um novo horário:</label>
-                            <select 
-                                id="novo-horario"
-                                value={novoHorarioSelecionado}
-                                onChange={(e) => setNovoHorarioSelecionado(e.target.value)}
-                            >
-                                {novoHorario.map((hora, index) => (
-                                    <option key={index} value={hora}>{hora}</option>
-                                ))}
-                            </select>
+            {agendamentoEdit && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <h3>Alterar Horário</h3>
+                        <p><strong>Cliente:</strong> {agendamentoEdit.nome}</p>
+                        <p><strong>Instrutor:</strong> {agendamentoEdit.instrutor}</p>
 
-                            <div className="modal-actions">
-                                <button className="btn-save" onClick={() => handleEditAgendamento(agendamentoEdit.id, novoHorarioSelecionado, 
-                                    setReload, setAgendamentoEdit)}>
-                                    Confirmar Alteração
-                                </button>
-                                <button className="btn-cancel" onClick={() => setAgendamentoEdit(null)}>
-                                    Voltar
-                                </button>
-                            </div>
+                        <label htmlFor="novo-horario">Escolha um novo horário:</label>
+                        <select
+                            id="novo-horario"
+                            value={novoHorarioSelecionado}
+                            onChange={(e) => setNovoHorarioSelecionado(e.target.value)}
+                        >
+                            {novoHorario.map((hora, index) => (
+                                <option key={index} value={hora}>{hora}</option>
+                            ))}
+                        </select>
+
+                        <div className="modal-actions">
+                            {/* agendamentoEdit.id PRISMA SQL */}
+                            <button className="btn-save" onClick={() => handleEditAgendamento(agendamentoEdit._id, novoHorarioSelecionado,
+                                setReload, setAgendamentoEdit)}>
+                                Confirmar Alteração
+                            </button>
+                            <button className="btn-cancel" onClick={() => setAgendamentoEdit(null)}>
+                                Voltar
+                            </button>
                         </div>
                     </div>
-                )}
+                </div>
+            )}
         </section>
     )
 }

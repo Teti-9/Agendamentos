@@ -5,7 +5,8 @@ const validarInstrutor = (req, res, next) => {
     const schema = Joi.object({
         nome: Joi.string().min(3).max(30).required(),
         dia: Joi.array().items(Joi.date().iso()).min(1).required(),
-        horario: Joi.string().min(5).required()
+        // horario: Joi.string().min(5).required() // PRISMA SQL
+        horario: Joi.array().min(1).required()
     })
 
     const { error } = schema.validate(req.body, { abortEarly: false })
