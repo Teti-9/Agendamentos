@@ -8,15 +8,17 @@ new Worker('tasks', async job => {
 
     switch (job.name) {
         case 'taskMail':
-            return mailJob.handle(job.data)
+            // return mailJob.handle(job.data) // PRISMA SQL
+            return mailJob.handle(job.data._doc) // MONGODB
 
         case 'taskAgendamento':
-            return agendamentoJob.handle(job.data, job.data.status)
+            // return agendamentoJob.handle(job.data, job.data.status) // PRISMA SQL
+            return agendamentoJob.handle(job.data._doc, job.data.status) // MONGODB
 
     }
 
-}, 
-{ connection: redisConfig.redis }
+},
+    { connection: redisConfig.redis }
 )
 
 console.log('🚀 Worker iniciado!')

@@ -5,6 +5,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "node --watch --env-file=.env ./src/server.js",
+    "worker": "node ./src/lib/worker.js",
+    "clearQueue": "node ./src/utils/limparQueueWorker.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

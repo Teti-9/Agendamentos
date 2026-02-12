@@ -89,12 +89,15 @@ https://redis.io/
 
 `npx prisma migrate dev`
 
-5. **Rode o APP**:
+5. **Comandos**:
 
 ```bash
-npm run dev (Rodar o Back-end)
+npm run dev (Rodar o Back-end).
+npm run clearQueue (Limpa a fila do worker.)
+npm run worker (Rodar o worker (Rode este comando em outro terminal.))
+
 cd front
-npm run dev (Rodar o Front-end após mudar de pasta.)
+npm run dev (Rodar o Front-end após mudar de pasta (Rode o front em outro terminal.))
 ```
 
 6. **Documentação Swagger**:
